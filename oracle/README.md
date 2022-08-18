@@ -1,9 +1,8 @@
 # Summary
 
 This project uses oracle docker container in order to set up a version of **oracle 19c** for your local environment. More details about this docker container image can be found here [Oracle link](https://container-registry.oracle.com/). To make this oracle image available for us, it has been uploaded to:
- * (**Mirada VPN**) dev-artifactory-exe:80/jaimenavarro/oracle-ee-19c
- * (**Internet**) jaimenavarro/oracle-ee-19c
- 
+  * (**Internet**) jaimenavarro/oracle-ee-19c
+
 # Folder structure
 * **docker-compose:** This folder contains information to deploy **oracle-19c** using docker-compose.
 
@@ -14,7 +13,7 @@ This project uses oracle docker container in order to set up a version of **orac
 
 
 ## Folder docker-compose
-Install oracle in docker. 
+Install oracle in docker.
 
 ```
 cd docker-compose
@@ -25,7 +24,7 @@ docker-compose -f docker-compose-oracle-ee-19-installed.yml up
 * ORACLE_SID=ORCLCDB
 * USER: *mirada*, *mirada_srm*, *mirada_sm*
 * DATA_PUMP_DIR: ./db/dumps -> /mnt
-* TABLESPACE USERS: 3 files (96 GB) 
+* TABLESPACE USERS: 3 files (96 GB)
 
 ## Folder kubernetes
 Install oracle in kubernetes. (storageClassName: "rook-ceph-block")
@@ -74,7 +73,7 @@ oracle-ee-19c | The following output is now a tail of the alert.log:
 oracle-ee-19c | ALTER SYSTEM SET local_listener='' SCOPE=BOTH;
 oracle-ee-19c |    ALTER PLUGGABLE DATABASE ORCLPDB1 SAVE STATE
 oracle-ee-19c | Completed:    ALTER PLUGGABLE DATABASE ORCLPDB1 SAVE STATE
-oracle-ee-19c | 
+oracle-ee-19c |
 oracle-ee-19c | XDB initialized.
 ```
 
