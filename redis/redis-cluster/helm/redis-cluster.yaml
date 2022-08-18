@@ -1,0 +1,37 @@
+redis:
+  # Whether to use AOF Persistence mode or not
+  # It is strongly recommended to use this type when dealing with clusters
+  #
+  # ref: https://redis.io/topics/persistence#append-only-file
+  # ref: https://redis.io/topics/cluster-tutorial#creating-and-using-a-redis-cluster
+  useAOFPersistence: "no"
+
+## Use password authentication
+##
+usePassword: false
+
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+  ## The path the volume will be mounted at, useful when using different
+  ## Redis(TM) images.
+  ##
+  path: /bitnami/redis/data
+  ## The subdirectory of the volume to mount to, useful in dev environments
+  ## and one PV for multiple services.
+  ##
+  subPath: ""
+  ## Redis(TM) data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: "storage-sdp-block"
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi  

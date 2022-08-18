@@ -1,0 +1,27 @@
+##################################################################################
+# https://github.com/compose-spec/compose-spec/blob/master/spec.md#memswap_limit
+# mem_limit = memswap_limit (no swap usage)
+##################################################################################
+version: '2'
+services:
+  oracle19:
+    container_name: oracle-ee-19c
+    image: jaimenavarro/oracle-ee-19c
+    privileged: true
+    restart: always
+    volumes:
+      - ./db/dumps:/mnt
+      - ./db/setup:/opt/oracle/scripts/setup
+      - ./db/startup:/opt/oracle/scripts/startup
+      - oracle19_data:/opt/oracle/oradata
+    ports:
+      - 1521:1521
+      - 5500:5500
+    environment:
+     - ORACLE_PWD=system
+     - ORACLE_SID=ORCLCDB
+    healthcheck:
+      disable: true
+      
+volumes:
+  oracle19_data: {}

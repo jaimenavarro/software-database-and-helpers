@@ -1,0 +1,23 @@
+javaMem: "-Xms4g -Xmx8g"
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+
+volumeClaimTemplates:
+  ## solr data Persistent Volume Storage Class
+  storageClassName: "storage-sdp-block"
+  accessModes:
+    - "ReadWriteOnce"
+  ## PersistentVolumeClaim size
+  ##
+  storageSize: 10Gi
+
+zookeeper:
+  replicaCount: 3
+  fourlwCommandsWhitelist: "srvr, mntr, ruok, conf"
+  persistence:
+    enabled: true
+    storageClass: "storage-sdp-block"
+    size: 4Gi

@@ -1,0 +1,32 @@
+global:
+  dockerRegistry: dev-artifactory-exe:80
+dockerImage: components/rabbitmq
+dockerTag: 3.6-management-alpine
+dockerImagePullPolicy: IfNotPresent
+
+enabled: true
+
+epmdPort: 4369
+amqpPort: 5672
+distPort: 25672
+adminPort: 15672
+persistentVolumeEnabled: true
+
+loadBalancerServiceType: LoadBalancer
+
+resources:
+  limits:
+    cpu: 2
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 1Gi
+
+rabbitStorage: 2Gi
+rabbitPvcHelmHook: pre-install
+rabbitStorageClassName: storage-sdp-block
+rabbitAccessModes: ReadWriteOnce
+
+nodeSelector:
+  operations.mirada.tv/role: worker
+apiVersion: "apps/v1"

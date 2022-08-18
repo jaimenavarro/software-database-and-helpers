@@ -1,0 +1,60 @@
+############################################################
+## https://github.com/bitnami/bitnami-docker-rabbitmq
+############################################################
+version: '2'
+services:
+  stats:
+    image: docker.io/bitnami/rabbitmq:3.8
+    environment:
+      - RABBITMQ_NODE_TYPE=stats
+      - RABBITMQ_NODE_NAME=rabbit@stats
+      - RABBITMQ_ERL_COOKIE=s3cr3tc00ki3
+      - RABBITMQ_VHOST=managetv
+      - RABBITMQ_USERNAME=sdp_user
+      - RABBITMQ_PASSWORD=sdp_password
+    volumes:
+      - 'rabbitmqstats_data:/bitnami'
+  queue-disc1:
+    image: docker.io/bitnami/rabbitmq:3.8
+    environment:
+      - RABBITMQ_NODE_TYPE=queue-disc
+      - RABBITMQ_NODE_NAME=rabbit@queue-disc1
+      - RABBITMQ_CLUSTER_NODE_NAME=rabbit@stats
+      - RABBITMQ_ERL_COOKIE=s3cr3tc00ki3
+      - RABBITMQ_VHOST=managetv
+      - RABBITMQ_USERNAME=sdp_user
+      - RABBITMQ_PASSWORD=sdp_password
+    volumes:
+      - 'rabbitmqdisc1_data:/bitnami'
+  queue-ram1:
+    image: docker.io/bitnami/rabbitmq:3.8
+    environment:
+      - RABBITMQ_NODE_TYPE=queue-ram
+      - RABBITMQ_NODE_NAME=rabbit@queue-ram1
+      - RABBITMQ_CLUSTER_NODE_NAME=rabbit@stats
+      - RABBITMQ_ERL_COOKIE=s3cr3tc00ki3
+      - RABBITMQ_VHOST=managetv
+      - RABBITMQ_USERNAME=sdp_user
+      - RABBITMQ_PASSWORD=sdp_password
+    volumes:
+      - 'rabbitmqram1_data:/bitnami'
+
+  haproxy:
+    image: haproxy:1.7
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - queue-ram1
+      - queue-disc1
+      - stats
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+volumes:
+  rabbitmqstats_data:
+    driver: local
+  rabbitmqdisc1_data:
+    driver: local
+  rabbitmqram1_data:
+    driver: local

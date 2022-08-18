@@ -1,0 +1,2 @@
+redis/redis-cluster/scripts/dump/**
+oracle/docker-compose/db/dumps/**

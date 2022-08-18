@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-02-18T18:54:22Z
+  name: oracle-config-setup
+  labels:
+    app: oracle-19c
+data:
+######################
+# 01_create_users.sql
+######################
+  01_create_users.sql: |-
+    # USER MIRADA
+    alter session set "_ORACLE_SCRIPT"=true;
+    CREATE USER mirada IDENTIFIED BY mirada;
+    
+    GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE SYNONYM, CREATE TABLESPACE, CREATE SEQUENCE, CREATE TRIGGER, CREATE JOB, CREATE MATERIALIZED VIEW TO mirada;
+    GRANT ALTER TABLESPACE TO mirada;
+    GRANT ALTER ANY TABLE, ALTER ANY PROCEDURE, ALTER ANY TRIGGER,  ALTER ANY MATERIALIZED VIEW TO mirada;
+    GRANT DROP TABLESPACE, DROP ANY TABLE, DROP ANY VIEW, DROP ANY PROCEDURE,DROP ANY SYNONYM, DROP ANY MATERIALIZED VIEW TO mirada;
+    
+    ALTER USER mirada QUOTA UNLIMITED ON USERS;
+    GRANT UNLIMITED TABLESPACE TO mirada;
+    
+    GRANT read, write ON DIRECTORY DATA_PUMP_DIR TO mirada;
+    
+    # USER MIRADA_SRM
+    CREATE USER mirada_srm IDENTIFIED BY mirada_srm;
+    
+    GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE SYNONYM, CREATE TABLESPACE, CREATE SEQUENCE, CREATE TRIGGER, CREATE JOB, CREATE MATERIALIZED VIEW TO mirada_srm;
+    GRANT ALTER TABLESPACE TO mirada_srm;
+    GRANT ALTER ANY TABLE, ALTER ANY PROCEDURE, ALTER ANY TRIGGER,  ALTER ANY MATERIALIZED VIEW TO mirada_srm;
+    GRANT DROP TABLESPACE, DROP ANY TABLE, DROP ANY VIEW, DROP ANY PROCEDURE,DROP ANY SYNONYM, DROP ANY MATERIALIZED VIEW TO mirada_srm;
+    
+    ALTER USER mirada_srm QUOTA UNLIMITED ON USERS;
+    GRANT UNLIMITED TABLESPACE TO mirada_srm;
+    
+    GRANT read, write ON DIRECTORY DATA_PUMP_DIR TO mirada_srm;
+    
+    # USER MIRADA_SM
+    CREATE USER mirada_sm IDENTIFIED BY mirada_sm;
+    
+    GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE SYNONYM, CREATE TABLESPACE, CREATE SEQUENCE, CREATE TRIGGER, CREATE JOB, CREATE MATERIALIZED VIEW TO mirada_sm;
+    GRANT ALTER TABLESPACE TO mirada_sm;
+    GRANT ALTER ANY TABLE, ALTER ANY PROCEDURE, ALTER ANY TRIGGER,  ALTER ANY MATERIALIZED VIEW TO mirada_sm;
+    GRANT DROP TABLESPACE, DROP ANY TABLE, DROP ANY VIEW, DROP ANY PROCEDURE,DROP ANY SYNONYM, DROP ANY MATERIALIZED VIEW TO mirada_sm;
+    
+    ALTER USER mirada_sm QUOTA UNLIMITED ON USERS;
+    GRANT UNLIMITED TABLESPACE TO mirada_sm;
+    
+    GRANT read, write ON DIRECTORY DATA_PUMP_DIR TO mirada_sm;
+#########################
+# 02_update_pump_dir.sql
+#########################
+  02_update_pump_dir.sql: |-
+    SELECT owner, directory_name, directory_path FROM dba_directories WHERE directory_name='DATA_PUMP_DIR';
+    CREATE OR REPLACE DIRECTORY "DATA_PUMP_DIR" as '/mnt/';
+#########################
+# 03_alter_database.sql
+#########################
+  03_alter_database.sql: |-
+    ALTER TABLESPACE USERS ADD DATAFILE '/opt/oracle/oradata/ORCLCDB/users02.dbf' SIZE 20M AUTOEXTEND ON;
+    ALTER TABLESPACE USERS ADD DATAFILE '/opt/oracle/oradata/ORCLCDB/users03.dbf' SIZE 20M AUTOEXTEND ON;
+    ALTER SYSTEM SET PROCESSES=1200 SCOPE=SPFILE; 
+    ALTER SYSTEM SET SESSIONS=1200 SCOPE=SPFILE;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle-19c
+  labels:
+    app: oracle-19c
+spec:
+  ports:
+  - port: 1521
+    name: oracle-19c-lis
+  clusterIP: None
+  selector:
+    app: oracle-19c
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oracle-19c
+  labels:
+    app: oracle-19c
+spec:
+  selector:
+    matchLabels:
+      app: oracle-19c
+  serviceName: "oracle-19c"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: oracle-19c
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: oracle-19c
+        image: jaimenavarro/oracle-ee-19c:latest
+        imagePullPolicy: IfNotPresent # Remove this fields if docker image is updated
+        env:
+        - name: ORACLE_PWD
+          value: "system"
+        - name: ORACLE_SID
+          value: "ORCLCDB"
+        ports:
+        - containerPort: 1521
+          name: oracle-19c-lis
+        volumeMounts:
+        - name: oradata
+          mountPath: /opt/oracle/oradata
+        - name: dump
+          mountPath: /mnt
+        - name: oracle-config-setup
+          mountPath: /opt/oracle/scripts/setup
+      volumes:
+      - name: oracle-config-setup
+        configMap:
+          name: oracle-config-setup
+  volumeClaimTemplates:
+  - metadata:
+      name: oradata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "storage-sdp-block"
+      resources:
+        requests:
+          storage: 96Gi
+  - metadata:
+      name: dump
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "storage-sdp-block"
+      resources:
+        requests:
+          storage: 30Gi

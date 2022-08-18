@@ -1,0 +1,19 @@
+version: '3.0'
+services:
+    trafficserver:
+        build:
+            context: .
+            args:
+                ats_version: 8.1.1
+        image: trafficserver
+        container_name: trafficserver
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+          - ./config:/usr/local/etc/trafficserver
+          - trafficserver_data:/cache
+
+volumes:
+  trafficserver_data: {}
