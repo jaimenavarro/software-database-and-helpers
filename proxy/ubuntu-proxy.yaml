@@ -2,40 +2,38 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: proxy-prometheus
+  name: proxy
   labels:
-    app: proxy-prometheus
+    app: proxy
 spec:
   ports:
-  - port: 80
+  - port: 9200
     name: proxy
   clusterIP: None
   selector:
-    app: proxy-prometheus
+    app: proxy
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: proxy-prometheus
+  name: proxy
   labels:
-    app: proxy-prometheus
+    app: proxy
 spec:
   selector:
     matchLabels:
-      app: proxy-prometheus
+      app: proxy
   replicas: 1
   template:
     metadata:
       labels:
-        app: proxy-prometheus
+        app: proxy
     spec:
       containers:
-      - name: proxy-prometheus
+      - name: proxy
         image: jaimenavarro/ubuntu:latest
         imagePullPolicy: Always
-        command: ["socat"]
-        args: ["-v","TCP4-LISTEN:80,fork,reuseaddr","TCP4:prometheus-server.monitoring.svc.cluster.local:9090"]
         ports:
-        - containerPort: 80
+        - containerPort: 9200
           name: proxy
 # socat TCP4-LISTEN:9090,fork,reuseaddr TCP4:prometheus.lens-metrics.svc.cluster.local:80
